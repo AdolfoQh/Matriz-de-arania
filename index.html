@@ -47,6 +47,17 @@
   .card-label { font-size: 10px; letter-spacing: 2.5px; color: var(--vino-dark); text-transform: uppercase; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--vino-pale); }
 
   .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
+  .material-highlight { grid-column: 1 / -1; background: var(--vino-pale); border: 2px solid var(--vino-light); border-radius: 5px; padding: 10px 14px; }
+  .material-highlight .field-label { font-size: 12px; font-weight: 900; color: var(--vino-dark); letter-spacing: 0.5px; margin-bottom: 5px; }
+  .material-highlight input { background: #fff; border-color: var(--vino-light); font-weight: 700; font-size: 14px; }
+  .consigna-card { background: #fff; border-radius: 6px; padding: 22px 26px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); border-left: 5px solid var(--vino-dark); }
+  .consigna-card .card-label { font-size: 10px; letter-spacing: 2.5px; color: var(--vino-dark); text-transform: uppercase; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--vino-pale); }
+  .consigna-context { font-size: 13px; color: #555; line-height: 1.7; margin-bottom: 12px; font-style: italic; }
+  .consigna-text { font-size: 13px; color: #222; line-height: 1.7; }
+  .consigna-text strong { color: var(--vino-dark); }
+  .material-ref { display: flex; align-items: center; gap: 10px; background: var(--vino-pale); border: 1.5px solid var(--vino-light); border-radius: 4px; padding: 9px 13px; margin-bottom: 16px; }
+  .material-ref-label { font-size: 10px; font-weight: 900; color: var(--vino-dark); text-transform: uppercase; letter-spacing: 1.5px; white-space: nowrap; }
+  .material-ref-val { font-size: 13px; font-weight: 700; color: #222; font-style: italic; }
   .field-label { font-size: 11px; color: #888; margin-bottom: 4px; font-weight: 500; }
   input[type=text], textarea {
     width: 100%; border: 1.5px solid #E0E0E0; border-radius: 4px;
@@ -147,6 +158,12 @@
 
 <div class="container">
 
+  <div class="consigna-card">
+    <div class="card-label">Consigna</div>
+    <p class="consigna-context">Este trabajo se construye sobre el TP1 de uno de tus compañeros. El grupo define la rotación: cada integrante recibe el análisis de una pieza distinta a la que trabajó, de modo que todos trabajen sobre material producido por otro. Antes de arrancar, leé con atención el análisis que recibís. Si tenés dudas sobre algún dato técnico, consultá con quien lo produjo — esa conversación ya es parte del proceso.</p>
+    <p class="consigna-text">A partir de la radiografía material elaborada por tu compañero, formulá una <strong>matriz de alternativas estratégicas</strong> para esa pieza. El objetivo es proponer, comparar y recomendar opciones de materialidad superadoras, integrando criterios técnicos, perceptuales, productivos y ambientales. No se trata de encontrar "el material perfecto", sino de <strong>aprender a tomar decisiones fundamentadas</strong> en un contexto de incertidumbre y restricciones reales.</p>
+  </div>
+
   <div class="card">
     <div class="card-label">Datos generales</div>
     <div class="grid-4">
@@ -154,6 +171,7 @@
       <div><div class="field-label">Grupo</div><input type="text" id="inp-grupo" placeholder="Ej: Grupo 3..."></div>
       <div><div class="field-label">Tema / Sistema de producto</div><input type="text" id="inp-tema" placeholder="Ej: Línea vinos Zuccardi..."></div>
       <div><div class="field-label">Pieza analizada (del compañero)</div><input type="text" id="inp-pieza" placeholder="Ej: Caja exterior secundaria..."></div>
+  <div class="material-highlight"><div class="field-label">Material original de la pieza</div><input type="text" id="inp-material" placeholder="Ej: Cartón gris 400 g/m²..." oninput="updateMatRefs()"></div>
     </div>
   </div>
 
@@ -203,6 +221,7 @@
     <div class="ex-meta-item"><div class="ex-meta-key">Grupo</div><div class="ex-meta-val" id="ex-grupo">—</div></div>
     <div class="ex-meta-item"><div class="ex-meta-key">Tema / Sistema</div><div class="ex-meta-val" id="ex-tema">—</div></div>
     <div class="ex-meta-item"><div class="ex-meta-key">Pieza analizada</div><div class="ex-meta-val" id="ex-pieza">—</div></div>
+    <div class="ex-meta-item"><div class="ex-meta-key">Material original</div><div class="ex-meta-val" id="ex-material">—</div></div>
   </div>
   <div class="ex-radars" id="ex-radars"></div>
   <div class="ex-table-wrap" id="ex-table-wrap"></div>
@@ -298,8 +317,12 @@ function renderPanel() {
     panel.innerHTML=`<div class="panel-grid">
       <div>
         <div class="alt-label" style="color:${color}">${ALT_NAMES[ai]}</div>
+        <div class="material-ref">
+          <span class="material-ref-label">Material original:</span>
+          <span class="material-ref-val" id="mat-ref-${ai}">${document.getElementById('inp-material').value || '—'}</span>
+        </div>
         <div style="margin-bottom:12px">
-          <div class="field-label">Nombre del material</div>
+          <div class="field-label">Nombre del material propuesto</div>
           <input type="text" value="${alt.nombre}" placeholder="Ej: Papel kraft reciclado 120 g/m²"
             oninput="alts[${ai}].nombre=this.value">
         </div>
@@ -365,6 +388,14 @@ function setScore(ai,eid,val) {
   if(td) td.textContent=EJES.reduce((s,e)=>s+(alts[ai][e.id]||0),0);
 }
 
+function updateMatRefs() {
+  const val = document.getElementById("inp-material").value || "—";
+  [0,1,2].forEach(i => {
+    const el = document.getElementById(`mat-ref-${i}`);
+    if(el) el.textContent = val;
+  });
+}
+
 async function exportar(tipo) {
   const status=document.getElementById("export-status");
   status.textContent="Generando imagen, un momento...";
@@ -373,6 +404,7 @@ async function exportar(tipo) {
   document.getElementById("ex-grupo").textContent=document.getElementById("inp-grupo").value||"—";
   document.getElementById("ex-tema").textContent=document.getElementById("inp-tema").value||"—";
   document.getElementById("ex-pieza").textContent=document.getElementById("inp-pieza").value||"—";
+  document.getElementById("ex-material").textContent=document.getElementById("inp-material").value||"—";
 
   const configs=[
     {altsToShow:[alts[0]],ci:0,title:"Alternativa 1",bg:ALT_BG[0],color:ALT_COLORS[0],idx:0},
