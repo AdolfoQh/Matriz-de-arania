@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TP2 — Matriz de Alternativas Estratégicas</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --vino-dark:  #722939;
+    --vino-mid:   #8F3347;
+    --vino-light: #b54b5d;
+    --vino-pale:  #F5E8EA;
+    --vino-ultra: #FDF4F5;
+    --alt1: #2980B9;
+    --alt2: #27AE60;
+    --alt3: #E0872A;
+    --fill1: rgba(41,128,185,0.20);
+    --fill2: rgba(39,174,96,0.20);
+    --fill3: rgba(224,135,42,0.20);
+    --gris: #555;
+    --gris-light: #F5F5F5;
+  }
+
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #F9F2F3 0%, #EDE0E2 100%);
+    min-height: 100vh; padding: 24px 16px; color: #222;
+  }
+
+  .header {
+    max-width: 940px; margin: 0 auto 24px;
+    background: linear-gradient(to top, var(--vino-dark) 0%, var(--vino-light) 100%);
+    border-radius: 6px; padding: 22px 30px;
+    box-shadow: 0 6px 24px rgba(114,41,57,0.35);
+  }
+  .header-eyebrow { font-size: 10px; letter-spacing: 3px; color: rgba(255,255,255,0.65); text-transform: uppercase; margin-bottom: 8px; }
+  .header-title { font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 24px; color: #fff; margin-bottom: 4px; }
+  .header-sub { font-size: 13px; color: rgba(255,255,255,0.7); }
+
+  .container { max-width: 940px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+  .card { background: #fff; border-radius: 6px; padding: 22px 26px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+  .card-label { font-size: 10px; letter-spacing: 2.5px; color: var(--vino-dark); text-transform: uppercase; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--vino-pale); }
+
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
+  .field-label { font-size: 11px; color: #888; margin-bottom: 4px; font-weight: 500; }
+  input[type=text], textarea {
+    width: 100%; border: 1.5px solid #E0E0E0; border-radius: 4px;
+    padding: 8px 11px; font-size: 13px; font-family: 'Roboto', sans-serif;
+    outline: none; transition: border-color 0.2s; background: #FAFAFA;
+  }
+  input[type=text]:focus, textarea:focus { border-color: var(--vino-light); background: #fff; }
+  textarea { resize: vertical; }
+
+  .ejes-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .eje-tag { background: var(--vino-pale); color: var(--vino-dark); border: 1.5px solid var(--vino-light); border-radius: 4px; padding: 5px 13px; font-size: 12px; font-weight: 700; }
+  .hint { font-size: 12px; color: #777; line-height: 1.6; margin-bottom: 14px; }
+
+  .tabs { display: flex; gap: 4px; }
+  .tab { flex: 1; padding: 11px 4px; border: none; border-radius: 5px 5px 0 0; background: #DDD; color: #777; font-weight: 400; font-size: 13px; cursor: pointer; font-family: 'Roboto', sans-serif; transition: all 0.15s; }
+  .tab.active { background: #fff; font-weight: 700; }
+  .tab-panel { background: #fff; border-radius: 0 0 6px 6px; padding: 26px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); margin-top: -4px; }
+
+  .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+  .alt-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin-bottom: 14px; }
+
+  .score-row { margin-bottom: 13px; }
+  .score-label { font-size: 12px; color: #333; margin-bottom: 4px; font-weight: 700; }
+  .score-input-row { display: flex; align-items: center; gap: 10px; }
+  input[type=range] { flex: 1; height: 4px; cursor: pointer; border: none; background: none; }
+  .score-val { min-width: 28px; text-align: center; font-weight: 700; font-size: 15px; font-family: monospace; }
+
+  .radar-wrap { display: flex; flex-direction: column; align-items: center; }
+  .radar-title { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .score-total { margin-top: 14px; font-size: 13px; color: #555; text-align: center; }
+  .score-total strong { font-size: 17px; }
+
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+  .legend { display: flex; gap: 20px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #333; }
+  .legend-dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { padding: 9px 10px; background: var(--vino-dark); color: #fff; text-align: left; }
+  th:not(:first-child) { text-align: center; }
+  td { padding: 7px 10px; border-bottom: 1px solid #F0F0F0; }
+  td:not(:first-child) { text-align: center; }
+  tr:nth-child(even) td { background: #FAFAFA; }
+  tr.total-row td { background: var(--vino-pale) !important; border-top: 2px solid var(--vino-dark); font-weight: 700; }
+
+  .nota { margin-top: 18px; padding: 14px 16px; background: #FFF8E7; border-left: 4px solid #C97A20; border-radius: 0 4px 4px 0; }
+  .nota-title { font-size: 10px; color: #7B3F00; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 6px; }
+  .nota p { font-size: 12px; color: #555; line-height: 1.6; }
+
+  .export-bar { display: flex; align-items: center; justify-content: space-between; background: #fff; border-radius: 6px; padding: 16px 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); flex-wrap: wrap; gap: 12px; }
+  .export-info { font-size: 13px; color: #555; }
+  .export-info strong { color: var(--vino-dark); }
+  .export-btns { display: flex; gap: 10px; }
+  .btn-export { padding: 10px 22px; border: none; border-radius: 4px; font-family: 'Roboto', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .btn-pdf { background: var(--vino-dark); color: #fff; box-shadow: 0 3px 10px rgba(114,41,57,0.3); }
+  .btn-pdf:hover { background: var(--vino-light); }
+  .btn-jpg { background: var(--gris-light); color: #333; border: 1.5px solid #DDD; }
+  .btn-jpg:hover { background: #E8E8E8; }
+  #export-status { font-size: 12px; color: var(--vino-mid); font-style: italic; min-height: 18px; margin-top: 4px; }
+
+  /* Export stage */
+  #export-stage { position: fixed; left: -9999px; top: 0; width: 1200px; background: #fff; padding: 40px; font-family: 'Roboto', sans-serif; display: none; }
+  .ex-header { background: linear-gradient(to top, #722939, #b54b5d); border-radius: 6px; padding: 18px 24px; margin-bottom: 24px; }
+  .ex-header-eye { font-size: 10px; letter-spacing: 3px; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 4px; }
+  .ex-header-title { font-weight: 900; font-size: 20px; color: #fff; }
+  .ex-meta { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 28px; }
+  .ex-meta-item { background: #FDF4F5; border-radius: 4px; padding: 10px 14px; }
+  .ex-meta-key { font-size: 9px; letter-spacing: 2px; color: #888; text-transform: uppercase; margin-bottom: 3px; }
+  .ex-meta-val { font-size: 13px; font-weight: 700; color: #222; }
+  .ex-radars { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
+  .ex-radar-box { text-align: center; }
+  .ex-radar-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; padding: 6px; border-radius: 3px; }
+  .ex-radar-name { font-size: 11px; color: #555; margin-top: 8px; font-style: italic; }
+  .ex-radar-sub { font-size: 11px; color: #888; margin-top: 3px; }
+  .ex-footer { margin-top: 20px; text-align: right; font-size: 10px; color: #AAA; }
+  .ex-table-wrap { margin-top: 28px; }
+  .ex-table-title { font-size: 10px; letter-spacing: 2.5px; color: #722939; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #F5E8EA; }
+  .ex-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'Roboto', sans-serif; }
+  .ex-table th { padding: 8px 12px; background: #722939; color: #fff; text-align: left; font-weight: 700; }
+  .ex-table th:not(:first-child) { text-align: center; }
+  .ex-table td { padding: 7px 12px; border-bottom: 1px solid #F0F0F0; }
+  .ex-table td:not(:first-child) { text-align: center; }
+  .ex-table tr:nth-child(even) td { background: #FAFAFA; }
+  .ex-table tr.ex-total td { background: #F5E8EA !important; border-top: 2px solid #722939; font-weight: 700; font-size: 13px; }
+
+  @media (max-width: 660px) {
+    .panel-grid, .comp-grid, .grid-4 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Tecnología II: Insumos — FAD UNCuyo — 2026</div>
+  <div class="header-title">TP Individual 2 — Matriz de Alternativas Estratégicas</div>
+  <div class="header-sub">Herramienta de análisis comparativo por radar</div>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <div class="card-label">Datos generales</div>
+    <div class="grid-4">
+      <div><div class="field-label">Estudiante</div><input type="text" id="inp-estudiante" placeholder="Nombre completo..."></div>
+      <div><div class="field-label">Grupo</div><input type="text" id="inp-grupo" placeholder="Ej: Grupo 3..."></div>
+      <div><div class="field-label">Tema / Sistema de producto</div><input type="text" id="inp-tema" placeholder="Ej: Línea vinos Zuccardi..."></div>
+      <div><div class="field-label">Pieza analizada (del compañero)</div><input type="text" id="inp-pieza" placeholder="Ej: Caja exterior secundaria..."></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Ejes de la matriz</div>
+    <p class="hint">Los 7 ejes están definidos por la cátedra para garantizar una comparación homogénea entre todos los grupos.</p>
+    <div class="ejes-grid">
+      <span class="eje-tag">🔒 Viabilidad técnica</span>
+      <span class="eje-tag">🔒 Impacto ambiental</span>
+      <span class="eje-tag">🔒 Experiencia / percepción</span>
+      <span class="eje-tag">🔒 Coherencia con posicionamiento</span>
+      <span class="eje-tag">🔒 Innovación material</span>
+      <span class="eje-tag">🔒 Durabilidad</span>
+      <span class="eje-tag">🔒 Disponibilidad local</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-0" onclick="setTab(0)">Alternativa 1</button>
+    <button class="tab" id="tab-1" onclick="setTab(1)">Alternativa 2</button>
+    <button class="tab" id="tab-2" onclick="setTab(2)">Alternativa 3</button>
+    <button class="tab" id="tab-3" onclick="setTab(3)">Comparativo</button>
+  </div>
+  <div class="tab-panel" id="tab-panel"></div>
+
+  <div class="export-bar">
+    <div class="export-info">
+      <div>Exportar análisis completo — <strong>4 gráficos radar + datos</strong></div>
+      <div id="export-status"></div>
+    </div>
+    <div class="export-btns">
+      <button class="btn-export btn-jpg" onclick="exportar('jpg')">⬇ Descargar JPG</button>
+      <button class="btn-export btn-pdf" onclick="exportar('pdf')">⬇ Descargar PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- EXPORT STAGE -->
+<div id="export-stage">
+  <div class="ex-header">
+    <div class="ex-header-eye">Tecnología II: Insumos — FAD UNCuyo — 2026</div>
+    <div class="ex-header-title">TP Individual 2 — Matriz de Alternativas Estratégicas</div>
+  </div>
+  <div class="ex-meta">
+    <div class="ex-meta-item"><div class="ex-meta-key">Estudiante</div><div class="ex-meta-val" id="ex-estudiante">—</div></div>
+    <div class="ex-meta-item"><div class="ex-meta-key">Grupo</div><div class="ex-meta-val" id="ex-grupo">—</div></div>
+    <div class="ex-meta-item"><div class="ex-meta-key">Tema / Sistema</div><div class="ex-meta-val" id="ex-tema">—</div></div>
+    <div class="ex-meta-item"><div class="ex-meta-key">Pieza analizada</div><div class="ex-meta-val" id="ex-pieza">—</div></div>
+  </div>
+  <div class="ex-radars" id="ex-radars"></div>
+  <div class="ex-table-wrap" id="ex-table-wrap"></div>
+  <div class="ex-footer" id="ex-footer"></div>
+</div>
+
+<script>
+const EJES = [
+  { id: "viabilidad",      label: "Viabilidad\ntécnica" },
+  { id: "impacto",         label: "Impacto\nambiental" },
+  { id: "percepcion",      label: "Experiencia /\npercepción" },
+  { id: "posicionamiento", label: "Coherencia con\nposicionamiento" },
+  { id: "innovacion",      label: "Innovación\nmaterial" },
+  { id: "durabilidad",     label: "Durabilidad" },
+  { id: "disponibilidad",  label: "Disponibilidad\nlocal" },
+];
+
+const ALT_COLORS = ["#2980B9","#27AE60","#E0872A"];
+const ALT_FILLS  = ["rgba(41,128,185,0.20)","rgba(39,174,96,0.20)","rgba(224,135,42,0.20)"];
+const ALT_BG     = ["#EBF5FF","#EAFAF1","#FEF5E7"];
+const ALT_NAMES  = ["Alternativa 1","Alternativa 2","Alternativa 3"];
+
+let currentTab = 0;
+const alts = [0,1,2].map(() => {
+  const o = { nombre: "", descripcion: "" };
+  EJES.forEach(e => { o[e.id] = 5; });
+  return o;
+});
+
+function radarSVG(altsToShow, size, colorStart) {
+  const cx=size/2, cy=size/2, r=size*0.33;
+  const n=EJES.length;
+  const ang = i => (Math.PI*2*i/n) - Math.PI/2;
+  const pt  = (i,v) => [cx+r*(v/10)*Math.cos(ang(i)), cy+r*(v/10)*Math.sin(ang(i))];
+  const lpd = r+42;
+  const lp  = i => [cx+lpd*Math.cos(ang(i)), cy+lpd*Math.sin(ang(i))];
+
+  let s = `<svg width="${size}" height="${size}" style="overflow:visible">`;
+  [2,4,6,8,10].forEach(lvl => {
+    const pts = EJES.map((_,i)=>pt(i,lvl).join(",")).join(" ");
+    s += `<polygon points="${pts}" fill="none" stroke="#EBEBEB" stroke-width="1"/>`;
+  });
+  EJES.forEach((_,i)=>{ const [x,y]=pt(i,10); s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#E0E0E0" stroke-width="1"/>`; });
+  [2,4,6,8,10].forEach(lvl=>{ const [x,y]=pt(0,lvl); s+=`<text x="${x+4}" y="${y}" font-size="8" fill="#CCCCCC" font-family="monospace">${lvl}</text>`; });
+
+  altsToShow.forEach((alt,idx)=>{
+    const ci=colorStart+idx;
+    const vals=EJES.map(e=>alt[e.id]||0);
+    const path=vals.map((v,i)=>{const[x,y]=pt(i,v);return`${i===0?"M":"L"}${x.toFixed(1)},${y.toFixed(1)}`;}).join(" ")+"Z";
+    s+=`<path d="${path}" fill="${ALT_FILLS[ci]}" stroke="${ALT_COLORS[ci]}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    vals.forEach((v,i)=>{const[x,y]=pt(i,v);s+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${ALT_COLORS[ci]}"/>`;});
+  });
+
+  EJES.forEach((e,i)=>{
+    const [x,y]=lp(i);
+    const lines=e.label.split("\n");
+    const dy0=lines.length>1?"-0.5em":"0";
+    s+=`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="10" font-weight="700" fill="#722939" font-family="'Roboto',sans-serif">`;
+    lines.forEach((line,li)=>{ s+=`<tspan x="${x}" dy="${li===0?dy0:"1.25em"}">${line}</tspan>`; });
+    s+=`</text>`;
+  });
+  s+=`</svg>`;
+  return s;
+}
+
+function setTab(i) {
+  currentTab=i;
+  [0,1,2,3].forEach(j=>{
+    const t=document.getElementById(`tab-${j}`);
+    t.classList.toggle("active",j===i);
+    const c=j<3?ALT_COLORS[j]:"#722939";
+    t.style.color=j===i?c:"";
+    t.style.boxShadow=j===i?`0 -3px 0 ${c} inset`:"";
+  });
+  renderPanel();
+}
+
+function renderPanel() {
+  const panel=document.getElementById("tab-panel");
+  if (currentTab<3) {
+    const ai=currentTab, alt=alts[ai], color=ALT_COLORS[ai];
+    const total=EJES.reduce((s,e)=>s+(alt[e.id]||0),0);
+    const scores=EJES.map(e=>`
+      <div class="score-row">
+        <div class="score-label">${e.label.replace("\n"," ")}</div>
+        <div class="score-input-row">
+          <input type="range" min="0" max="10" step="1" value="${alt[e.id]||0}"
+            style="accent-color:${color}" oninput="setScore(${ai},'${e.id}',+this.value)">
+          <span class="score-val" style="color:${color}" id="sv-${ai}-${e.id}">${alt[e.id]||0}</span>
+        </div>
+      </div>`).join("");
+
+    panel.innerHTML=`<div class="panel-grid">
+      <div>
+        <div class="alt-label" style="color:${color}">${ALT_NAMES[ai]}</div>
+        <div style="margin-bottom:12px">
+          <div class="field-label">Nombre del material</div>
+          <input type="text" value="${alt.nombre}" placeholder="Ej: Papel kraft reciclado 120 g/m²"
+            oninput="alts[${ai}].nombre=this.value">
+        </div>
+        <div style="margin-bottom:20px">
+          <div class="field-label">Descripción breve</div>
+          <textarea rows="3" placeholder="Familia, propiedades, contexto de uso..."
+            oninput="alts[${ai}].descripcion=this.value">${alt.descripcion}</textarea>
+        </div>
+        <div class="field-label" style="text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Puntajes (1–10)</div>
+        ${scores}
+      </div>
+      <div class="radar-wrap">
+        <div class="radar-title">Radar — ${ALT_NAMES[ai]}</div>
+        <div id="radar-ind-${ai}">${radarSVG([alt],300,ai)}</div>
+        <div class="score-total">Puntaje total:
+          <strong style="color:${color}" id="total-disp-${ai}">${total}</strong> / ${EJES.length*10}
+        </div>
+      </div>
+    </div>`;
+  } else {
+    const totales=alts.map(a=>EJES.reduce((s,e)=>s+(a[e.id]||0),0));
+    const maxTotal=Math.max(...totales);
+    const mejorIdx=totales.indexOf(maxTotal);
+    const legend=alts.map((a,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${ALT_COLORS[i]}"></div><span>${a.nombre||ALT_NAMES[i]}</span></div>`).join("");
+    const rows=EJES.map(e=>{
+      const vals=alts.map(a=>a[e.id]||0);
+      const maxV=Math.max(...vals);
+      const cells=vals.map((v,i)=>`<td style="${v===maxV?`color:${ALT_COLORS[i]};font-weight:700`:''}">${v}</td>`).join("");
+      return `<tr><td style="font-weight:700">${e.label.replace("\n"," ")}</td>${cells}</tr>`;
+    }).join("");
+    const headers=alts.map((a,i)=>`<th style="text-align:center">${a.nombre||ALT_NAMES[i]}</th>`).join("");
+    const totalCells=totales.map((t,i)=>`<td style="${t===maxTotal?`color:${ALT_COLORS[i]}`:''};font-size:15px">${t}</td>`).join("");
+
+    panel.innerHTML=`
+      <div class="card-label">Vista comparativa — 3 alternativas superpuestas</div>
+      <div class="comp-grid">
+        <div class="radar-wrap">
+          ${radarSVG(alts,350,0)}
+          <div class="legend">${legend}</div>
+        </div>
+        <div>
+          <div class="card-label" style="margin-bottom:10px">Tabla de puntajes</div>
+          <table>
+            <thead><tr><th>Eje</th>${headers}</tr></thead>
+            <tbody>${rows}<tr class="total-row"><td>TOTAL</td>${totalCells}</tr></tbody>
+          </table>
+          <div class="nota">
+            <div class="nota-title">⚠ Nota metodológica</div>
+            <p>El puntaje más alto (<strong>${alts[mejorIdx].nombre||ALT_NAMES[mejorIdx]}</strong>) sugiere ventaja cuantitativa, pero la recomendación final debe estar fundamentada cualitativamente. El número orienta, no decide.</p>
+          </div>
+        </div>
+      </div>`;
+  }
+}
+
+function setScore(ai,eid,val) {
+  alts[ai][eid]=val;
+  const sv=document.getElementById(`sv-${ai}-${eid}`);
+  if(sv) sv.textContent=val;
+  const rd=document.getElementById(`radar-ind-${ai}`);
+  if(rd) rd.innerHTML=radarSVG([alts[ai]],300,ai);
+  const td=document.getElementById(`total-disp-${ai}`);
+  if(td) td.textContent=EJES.reduce((s,e)=>s+(alts[ai][e.id]||0),0);
+}
+
+async function exportar(tipo) {
+  const status=document.getElementById("export-status");
+  status.textContent="Generando imagen, un momento...";
+
+  document.getElementById("ex-estudiante").textContent=document.getElementById("inp-estudiante").value||"—";
+  document.getElementById("ex-grupo").textContent=document.getElementById("inp-grupo").value||"—";
+  document.getElementById("ex-tema").textContent=document.getElementById("inp-tema").value||"—";
+  document.getElementById("ex-pieza").textContent=document.getElementById("inp-pieza").value||"—";
+
+  const configs=[
+    {altsToShow:[alts[0]],ci:0,title:"Alternativa 1",bg:ALT_BG[0],color:ALT_COLORS[0],idx:0},
+    {altsToShow:[alts[1]],ci:1,title:"Alternativa 2",bg:ALT_BG[1],color:ALT_COLORS[1],idx:1},
+    {altsToShow:[alts[2]],ci:2,title:"Alternativa 3",bg:ALT_BG[2],color:ALT_COLORS[2],idx:2},
+    {altsToShow:alts,    ci:0,title:"Comparativo",   bg:"#F5E8EA", color:"#722939",    idx:3},
+  ];
+
+  document.getElementById("ex-radars").innerHTML=configs.map(c=>{
+    const nombre=c.idx<3?(alts[c.idx].nombre||c.title):"3 alternativas superpuestas";
+    const total=c.idx<3?EJES.reduce((s,e)=>s+(alts[c.idx][e.id]||0),0):"";
+    return `<div class="ex-radar-box">
+      <div class="ex-radar-title" style="background:${c.bg};color:${c.color}">${c.title}</div>
+      ${radarSVG(c.altsToShow,240,c.ci)}
+      <div class="ex-radar-name">${nombre}</div>
+      ${c.idx<3?`<div class="ex-radar-sub">Total: <strong style="color:${c.color}">${total}</strong> / ${EJES.length*10}</div>`:""}
+    </div>`;
+  }).join("");
+
+  const now=new Date();
+  document.getElementById("ex-footer").textContent=`Generado el ${now.toLocaleDateString('es-AR')} — Tecnología II: Insumos — FAD UNCuyo — 2026`;
+
+  // Build comparison table
+  const totales=alts.map(a=>EJES.reduce((s,e)=>s+(a[e.id]||0),0));
+  const maxTotal=Math.max(...totales);
+  const mejorIdx=totales.indexOf(maxTotal);
+  const thNames=alts.map((a,i)=>`<th style="text-align:center">${a.nombre||ALT_NAMES[i]}</th>`).join("");
+  const tableRows=EJES.map(e=>{
+    const vals=alts.map(a=>a[e.id]||0);
+    const maxV=Math.max(...vals);
+    const cells=vals.map((v,i)=>`<td style="${v===maxV?`color:${ALT_COLORS[i]};font-weight:700`:""}">${v}</td>`).join("");
+    return `<tr><td style="font-weight:700">${e.label.replace("\n"," ")}</td>${cells}</tr>`;
+  }).join("");
+  const totalCells=totales.map((t,i)=>`<td style="${t===maxTotal?`color:${ALT_COLORS[i]}`:""}">${t} / ${EJES.length*10}</td>`).join("");
+
+  document.getElementById("ex-table-wrap").innerHTML=`
+    <div class="ex-table-title">Tabla de puntajes comparativa</div>
+    <table class="ex-table">
+      <thead><tr><th>Eje</th>${thNames}</tr></thead>
+      <tbody>
+        ${tableRows}
+        <tr class="ex-total"><td>TOTAL</td>${totalCells}</tr>
+      </tbody>
+    </table>
+    <div style="margin-top:10px;padding:10px 14px;background:#FFF8E7;border-left:4px solid #C97A20;font-size:11px;color:#555;border-radius:0 4px 4px 0">
+      <strong style="color:#7B3F00">⚠ Nota metodológica:</strong> El puntaje más alto (<strong>${alts[mejorIdx].nombre||ALT_NAMES[mejorIdx]}</strong>) sugiere ventaja cuantitativa, pero la recomendación final debe estar fundamentada cualitativamente. El número orienta, no decide.
+    </div>`;
+
+  const stage=document.getElementById("export-stage");
+  stage.style.display="block";
+  await new Promise(r=>setTimeout(r,400));
+
+  try {
+    const canvas=await html2canvas(stage,{scale:2,useCORS:true,backgroundColor:"#ffffff",width:1200,windowWidth:1200});
+    stage.style.display="none";
+    const fname=`TP2_Matriz_${(document.getElementById("inp-estudiante").value||"estudiante").replace(/\s+/g,"_")}`;
+
+    if(tipo==="jpg"){
+      const link=document.createElement("a");
+      link.download=fname+".jpg";
+      link.href=canvas.toDataURL("image/jpeg",0.95);
+      link.click();
+      status.textContent="✓ JPG descargado correctamente.";
+    } else {
+      const imgData=canvas.toDataURL("image/jpeg",0.95);
+      const win=window.open("","_blank");
+      win.document.write(`<!DOCTYPE html><html><head><title>${fname}</title>
+        <style>body{margin:0}img{width:100%;display:block}
+        @media print{@page{size:A3 landscape;margin:0}}</style></head>
+        <body><img src="${imgData}">
+        <script>window.onload=function(){window.print();}<\/script></body></html>`);
+      win.document.close();
+      status.textContent="✓ PDF listo — usá Ctrl+P / Cmd+P para guardar como PDF.";
+    }
+  } catch(e) {
+    stage.style.display="none";
+    status.textContent="Error al generar. Intentá de nuevo.";
+    console.error(e);
+  }
+}
+
+setTab(0);
+</script>
+</body>
+</html>
