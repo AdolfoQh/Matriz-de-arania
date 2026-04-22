@@ -50,6 +50,10 @@
   .material-highlight { grid-column: 1 / -1; background: var(--vino-pale); border: 2px solid var(--vino-light); border-radius: 5px; padding: 10px 14px; }
   .material-highlight .field-label { font-size: 12px; font-weight: 900; color: var(--vino-dark); letter-spacing: 0.5px; margin-bottom: 5px; }
   .material-highlight input { background: #fff; border-color: var(--vino-light); font-weight: 700; font-size: 14px; }
+  .material-secondary { grid-column: 1 / -1; background: #FAFAFA; border: 1px dashed #CCC; border-radius: 5px; padding: 10px 14px; }
+  .material-secondary .field-label { font-size: 11px; font-weight: 700; color: #555; letter-spacing: 0.5px; margin-bottom: 5px; }
+  .material-secondary textarea { background: #fff; font-size: 13px; }
+  .material-sub-hint { font-size: 11px; color: #777; margin-top: 5px; font-style: italic; }
   .consigna-card { background: #fff; border-radius: 6px; padding: 22px 26px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); border-left: 5px solid var(--vino-dark); }
   .consigna-card .card-label { font-size: 10px; letter-spacing: 2.5px; color: var(--vino-dark); text-transform: uppercase; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--vino-pale); }
   .consigna-context { font-size: 13px; color: #555; line-height: 1.7; margin-bottom: 12px; font-style: italic; }
@@ -69,6 +73,14 @@
 
   .ejes-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .eje-tag { background: var(--vino-pale); color: var(--vino-dark); border: 1.5px solid var(--vino-light); border-radius: 4px; padding: 5px 13px; font-size: 12px; font-weight: 700; }
+
+  .ejes-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .eje-item { background: var(--vino-ultra); border-left: 3px solid var(--vino-light); border-radius: 0 4px 4px 0; padding: 9px 12px; }
+  .eje-item-name { font-size: 12px; font-weight: 700; color: var(--vino-dark); margin-bottom: 3px; }
+  .eje-item-desc { font-size: 11px; color: #555; line-height: 1.4; }
+
+  .score-desc { font-size: 10.5px; color: #888; margin-bottom: 5px; line-height: 1.35; font-style: italic; }
+
   .hint { font-size: 12px; color: #777; line-height: 1.6; margin-bottom: 14px; }
 
   .tabs { display: flex; gap: 4px; }
@@ -164,6 +176,9 @@
 
     /* Ejes: más compactos */
     .eje-tag { font-size: 11px; padding: 4px 10px; }
+    .ejes-list { grid-template-columns: 1fr; gap: 8px; }
+    .eje-item-name { font-size: 12px; }
+    .eje-item-desc { font-size: 11px; }
 
     /* Tabs: texto más chico */
     .tab { font-size: 11px; padding: 9px 2px; }
@@ -229,22 +244,23 @@
       <div><div class="field-label">Grupo</div><input type="text" id="inp-grupo" placeholder="Ej: Grupo 3..."></div>
       <div><div class="field-label">Tema / Sistema de producto</div><input type="text" id="inp-tema" placeholder="Ej: Línea vinos Zuccardi..."></div>
       <div><div class="field-label">Pieza analizada (del compañero)</div><input type="text" id="inp-pieza" placeholder="Ej: Caja exterior secundaria..."></div>
-  <div class="material-highlight"><div class="field-label">Material original de la pieza</div><input type="text" id="inp-material" placeholder="Ej: Cartón gris 400 g/m²..." oninput="updateMatRefs()"></div>
+      <div class="material-highlight">
+        <div class="field-label">Material principal a analizar</div>
+        <input type="text" id="inp-material" placeholder="Ej: Cartón gris 400 g/m²..." oninput="updateMatRefs()">
+        <div class="material-sub-hint">El material sobre el que vas a proponer alternativas.</div>
+      </div>
+      <div class="material-secondary">
+        <div class="field-label">Otros materiales presentes en la pieza (opcional)</div>
+        <textarea id="inp-material-otros" rows="2" placeholder="Ej: Etiqueta de papel ilustración 120 g/m², cápsula de aluminio, tapa de corcho..."></textarea>
+        <div class="material-sub-hint">Se incluyen como contexto; no se evalúan en la matriz.</div>
+      </div>
     </div>
   </div>
 
   <div class="card">
     <div class="card-label">Ejes de la matriz</div>
     <p class="hint">Los 7 ejes están definidos por la cátedra para garantizar una comparación homogénea entre todos los grupos.</p>
-    <div class="ejes-grid">
-      <span class="eje-tag">🔒 Viabilidad técnica</span>
-      <span class="eje-tag">🔒 Impacto ambiental</span>
-      <span class="eje-tag">🔒 Experiencia / percepción</span>
-      <span class="eje-tag">🔒 Coherencia con posicionamiento</span>
-      <span class="eje-tag">🔒 Innovación material</span>
-      <span class="eje-tag">🔒 Durabilidad</span>
-      <span class="eje-tag">🔒 Disponibilidad local</span>
-    </div>
+    <div class="ejes-list" id="ejes-list"></div>
   </div>
 
   <div class="tabs">
@@ -279,7 +295,8 @@
     <div class="ex-meta-item"><div class="ex-meta-key">Grupo</div><div class="ex-meta-val" id="ex-grupo">—</div></div>
     <div class="ex-meta-item"><div class="ex-meta-key">Tema / Sistema</div><div class="ex-meta-val" id="ex-tema">—</div></div>
     <div class="ex-meta-item"><div class="ex-meta-key">Pieza analizada</div><div class="ex-meta-val" id="ex-pieza">—</div></div>
-    <div class="ex-meta-item"><div class="ex-meta-key">Material original</div><div class="ex-meta-val" id="ex-material">—</div></div>
+    <div class="ex-meta-item" style="grid-column: 1 / -1; background: #FDF4F5; border: 1.5px solid #b54b5d;"><div class="ex-meta-key">Material principal a analizar</div><div class="ex-meta-val" id="ex-material">—</div></div>
+    <div class="ex-meta-item" style="grid-column: 1 / -1;"><div class="ex-meta-key">Otros materiales presentes (contexto)</div><div class="ex-meta-val" id="ex-material-otros" style="font-weight:400;font-size:12px;">—</div></div>
   </div>
   <div class="ex-radars" id="ex-radars"></div>
   <div class="ex-table-wrap" id="ex-table-wrap"></div>
@@ -288,13 +305,13 @@
 
 <script>
 const EJES = [
-  { id: "viabilidad",      label: "Viabilidad\ntécnica" },
-  { id: "impacto",         label: "Impacto\nambiental" },
-  { id: "percepcion",      label: "Experiencia /\npercepción" },
-  { id: "posicionamiento", label: "Coherencia con\nposicionamiento" },
-  { id: "innovacion",      label: "Innovación\nmaterial" },
-  { id: "durabilidad",     label: "Durabilidad" },
-  { id: "disponibilidad",  label: "Disponibilidad\nlocal" },
+  { id: "viabilidad",      label: "Viabilidad\ntécnica",       desc: "Posibilidad real de fabricación con la tecnología disponible en contexto local." },
+  { id: "impacto",         label: "Impacto\nambiental",        desc: "Huella del material en el ciclo completo: extracción, producción, uso y descarte." },
+  { id: "percepcion",      label: "Experiencia /\npercepción", desc: "Cómo el material afecta el contacto sensorial y la lectura del producto por el usuario." },
+  { id: "posicionamiento", label: "Coherencia con\nposicionamiento", desc: "Grado en que el material refuerza o contradice el valor de marca del producto." },
+  { id: "innovacion",      label: "Innovación\nmaterial",      desc: "Apertura hacia materiales emergentes, poco explorados o con potencial disruptivo." },
+  { id: "durabilidad",     label: "Durabilidad",               desc: "Capacidad del material de mantener sus propiedades durante el uso esperado." },
+  { id: "disponibilidad",  label: "Disponibilidad\nlocal",     desc: "Accesibilidad del material en Mendoza y región, considerando proveedores reales." },
 ];
 
 const ALT_COLORS = ["#2980B9","#27AE60","#E0872A"];
@@ -357,6 +374,17 @@ function setTab(i) {
   renderPanel();
 }
 
+function renderEjesList() {
+  const cont = document.getElementById("ejes-list");
+  if (!cont) return;
+  cont.innerHTML = EJES.map(e => `
+    <div class="eje-item">
+      <div class="eje-item-name">🔒 ${e.label.replace("\n"," ")}</div>
+      <div class="eje-item-desc">${e.desc}</div>
+    </div>
+  `).join("");
+}
+
 function renderPanel() {
   const panel=document.getElementById("tab-panel");
   if (currentTab<3) {
@@ -365,6 +393,7 @@ function renderPanel() {
     const scores=EJES.map(e=>`
       <div class="score-row">
         <div class="score-label">${e.label.replace("\n"," ")}</div>
+        <div class="score-desc">${e.desc}</div>
         <div class="score-input-row">
           <input type="range" min="0" max="10" step="1" value="${alt[e.id]||0}"
             style="accent-color:${color}" oninput="setScore(${ai},'${e.id}',+this.value)">
@@ -376,7 +405,7 @@ function renderPanel() {
       <div>
         <div class="alt-label" style="color:${color}">${ALT_NAMES[ai]}</div>
         <div class="material-ref">
-          <span class="material-ref-label">Material original:</span>
+          <span class="material-ref-label">Material principal a analizar:</span>
           <span class="material-ref-val" id="mat-ref-${ai}">${document.getElementById('inp-material').value || '—'}</span>
         </div>
         <div style="margin-bottom:12px">
@@ -463,6 +492,7 @@ async function exportar(tipo) {
   document.getElementById("ex-tema").textContent=document.getElementById("inp-tema").value||"—";
   document.getElementById("ex-pieza").textContent=document.getElementById("inp-pieza").value||"—";
   document.getElementById("ex-material").textContent=document.getElementById("inp-material").value||"—";
+  document.getElementById("ex-material-otros").textContent=document.getElementById("inp-material-otros").value||"—";
 
   const configs=[
     {altsToShow:[alts[0]],ci:0,title:"Alternativa 1",bg:ALT_BG[0],color:ALT_COLORS[0],idx:0},
@@ -544,6 +574,7 @@ async function exportar(tipo) {
   }
 }
 
+renderEjesList();
 setTab(0);
 </script>
 </body>
